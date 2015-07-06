@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net"
+
+	"github.com/mdlayher/ethernet"
 )
 
 //go:generate stringer -output=string.go -type=Operation
@@ -104,7 +106,7 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 		HardwareType: 1,
 
 		// Default to EtherType for IPv4
-		ProtocolType: 0x800,
+		ProtocolType: uint16(ethernet.EtherTypeIPv4),
 
 		// Populate other fields using input data
 		MACLength: uint8(len(srcMAC)),
