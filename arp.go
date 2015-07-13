@@ -96,9 +96,6 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 	if dstIP == nil {
 		return nil, ErrInvalidIP
 	}
-	if len(srcIP) != len(dstIP) {
-		return nil, ErrInvalidIP
-	}
 
 	return &Packet{
 		// There is no Go-native way to detect hardware type of a network
