@@ -73,7 +73,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		return nil, err
 	}
 
-	// Create thernet frame addressed to broadcast MAC to encapsulate the
+	// Create ethernet frame addressed to broadcast MAC to encapsulate the
 	// ARP packet
 	eth := &ethernet.Frame{
 		DestinationMAC: ethernet.Broadcast,
