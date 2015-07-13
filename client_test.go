@@ -8,6 +8,19 @@ import (
 	"time"
 )
 
+func TestClientClose(t *testing.T) {
+	p := &closeCapturePacketConn{}
+	c := &Client{p: p}
+
+	if err := c.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	if !p.closed {
+		t.Fatal("client was not closed")
+	}
+}
+
 func TestClientSetDeadline(t *testing.T) {
 	p := &deadlineCapturePacketConn{}
 	c := &Client{p: p}
@@ -212,6 +225,19 @@ func Test_firstIPv4Addr(t *testing.T) {
 				i, tt.desc, want, got)
 		}
 	}
+}
+
+// closeCapturePacketConn is a net.PacketConn which captures when
+// it is closed.
+type closeCapturePacketConn struct {
+	closed bool
+
+	noopPacketConn
+}
+
+func (p *closeCapturePacketConn) Close() error {
+	p.closed = true
+	return nil
 }
 
 // deadlineCapturePacketConn is a net.PacketConn which captures read and
