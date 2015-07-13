@@ -3,3 +3,7 @@ arp [![Build Status](https://travis-ci.org/mdlayher/arp.svg?branch=master)](http
 
 Package `arp` implements an ARP client and server, as described in RFC 826.
 MIT Licensed.
+
+Portions of this code are taken from the Go standard library.  The Go
+standard library is Copyright (c) 2012 The Go Authors. All rights reserved.
+The Go license can be found at https://golang.org/LICENSE.

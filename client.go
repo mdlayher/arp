@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/mdlayher/ethernet"
 	"github.com/mdlayher/raw"
@@ -110,6 +111,38 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 			return arp.SenderMAC, nil
 		}
 	}
+}
+
+// Copyright (c) 2012 The Go Authors. All rights reserved.
+// Source code in this file is based on src/net/interface_linux.go,
+// from the Go standard library.  The Go license can be found here:
+// https://golang.org/LICENSE.
+
+// Documentation taken from net.PacketConn interface.  Thanks:
+// http://golang.org/pkg/net/#PacketConn.
+
+// SetDeadline sets the read and write deadlines associated with the
+// connection.
+func (c *Client) SetDeadline(t time.Time) error {
+	return c.p.SetDeadline(t)
+}
+
+// SetReadDeadline sets the deadline for future raw socket read calls.
+// If the deadline is reached, a raw socket read will fail with a timeout
+// (see type net.Error) instead of blocking.
+// A zero value for t means a raw socket read will not time out.
+func (c *Client) SetReadDeadline(t time.Time) error {
+	return c.p.SetReadDeadline(t)
+}
+
+// SetWriteDeadline sets the deadline for future raw socket write calls.
+// If the deadline is reached, a raw socket write will fail with a timeout
+// (see type net.Error) instead of blocking.
+// A zero value for t means a raw socket write will not time out.
+// Even if a write times out, it may return n > 0, indicating that
+// some of the data was successfully written.
+func (c *Client) SetWriteDeadline(t time.Time) error {
+	return c.p.SetWriteDeadline(t)
 }
 
 // firstIPv4Addr attempts to retrieve the first detected IPv4 address from an
