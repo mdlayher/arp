@@ -29,19 +29,27 @@ type Client struct {
 // NewClient retrieves the IPv4 address of the interface and binds a raw socket
 // to send and receive ARP packets.
 func NewClient(ifi *net.Interface) (*Client, error) {
-	// Check for a usable IPv4 address for the Client
-	addrs, err := ifi.Addrs()
-	if err != nil {
-		return nil, err
-	}
-	ip, err := firstIPv4Addr(addrs)
+	// Open raw socket to send and receive ARP packets using ethernet frames
+	// we build ourselves
+	p, err := raw.ListenPacket(ifi, syscall.SOCK_RAW, syscall.ETH_P_ARP)
 	if err != nil {
 		return nil, err
 	}
 
-	// Open raw socket to send and receive ARP packets using ethernet frames
-	// we build ourselves
-	p, err := raw.ListenPacket(ifi, syscall.SOCK_RAW, syscall.ETH_P_ARP)
+	// Check for usable IPv4 addresses for the Client
+	addrs, err := ifi.Addrs()
+	if err != nil {
+		return nil, err
+	}
+
+	return newClient(ifi, p, addrs)
+}
+
+// newClient is the internal, generic implementation of newClient.  It is used
+// to allow an arbitrary net.PacketConn to be used in a Client, so testing
+// is easier to accomplish.
+func newClient(ifi *net.Interface, p net.PacketConn, addrs []net.Addr) (*Client, error) {
+	ip, err := firstIPv4Addr(addrs)
 	if err != nil {
 		return nil, err
 	}
