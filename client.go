@@ -61,8 +61,6 @@ func (c *Client) Close() error {
 
 // Request performs an ARP request, attempting to retrieve the MAC address
 // of a machine using its IPv4 address.
-//
-// BUG(mdlayher): add deadlines for Request.
 func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 	// Create ARP packet addressed to broadcast MAC to attempt to find the
 	// hardware address of the input IP address
