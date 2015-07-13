@@ -3,8 +3,53 @@ package arp
 import (
 	"bytes"
 	"net"
+	"reflect"
 	"testing"
 )
+
+func Test_newClient(t *testing.T) {
+	var tests = []struct {
+		desc  string
+		addrs []net.Addr
+		c     *Client
+		err   error
+	}{
+		{
+			desc: "no network addresses",
+			err:  errNoIPv4Addr,
+		},
+		{
+			desc: "OK",
+			addrs: []net.Addr{
+				&net.IPNet{
+					IP:   net.IPv4(192, 168, 1, 1),
+					Mask: []byte{255, 255, 255, 0},
+				},
+			},
+			c: &Client{
+				ip: net.IPv4(192, 168, 1, 1).To4(),
+			},
+			err: errNoIPv4Addr,
+		},
+	}
+
+	for i, tt := range tests {
+		c, err := newClient(nil, nil, tt.addrs)
+		if err != nil {
+			if want, got := tt.err.Error(), err.Error(); want != got {
+				t.Fatalf("[%02d] test %q, unexpected error: %v != %v",
+					i, tt.desc, want, got)
+			}
+
+			continue
+		}
+
+		if want, got := tt.c, c; !reflect.DeepEqual(want, got) {
+			t.Fatalf("[%02d] test %q, unexpected Client: %v != %v",
+				i, tt.desc, want, got)
+		}
+	}
+}
 
 func Test_firstIPv4Addr(t *testing.T) {
 	var tests = []struct {
