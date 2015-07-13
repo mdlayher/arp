@@ -7,11 +7,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/mdlayher/arp"
 )
 
 var (
+	// durFlag is used to set a timeout for an ARP request
+	durFlag = flag.Duration("d", 1*time.Second, "timeout for ARP request")
+
 	// ifaceFlag is used to set a network interface for ARP requests
 	ifaceFlag = flag.String("i", "eth0", "network interface to use for ARP request")
 
@@ -31,6 +35,11 @@ func main() {
 	// Set up ARP client with socket
 	c, err := arp.NewClient(ifi)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Set request deadline from flag
+	if err := c.SetDeadline(time.Now().Add(*durFlag)); err != nil {
 		log.Fatal(err)
 	}
 
