@@ -5,7 +5,59 @@ import (
 	"net"
 	"reflect"
 	"testing"
+	"time"
 )
+
+func TestClientSetDeadline(t *testing.T) {
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
+
+	d := time.Now()
+	if err := c.SetDeadline(d); err != nil {
+		t.Fatal(err)
+	}
+
+	if want, got := d, p.r; want != got {
+		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+	}
+	if want, got := d, p.w; want != got {
+		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+	}
+}
+
+func TestClientSetReadDeadline(t *testing.T) {
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
+
+	d := time.Now()
+	if err := c.SetReadDeadline(d); err != nil {
+		t.Fatal(err)
+	}
+
+	if want, got := d, p.r; want != got {
+		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+	}
+	if want, got := (time.Time{}), p.w; want != got {
+		t.Fatalf("non-zero write deadline: %v", got)
+	}
+}
+
+func TestClientSetWriteDeadline(t *testing.T) {
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
+
+	d := time.Now()
+	if err := c.SetWriteDeadline(d); err != nil {
+		t.Fatal(err)
+	}
+
+	if want, got := (time.Time{}), p.r; want != got {
+		t.Fatalf("non-zero read deadline: %v", got)
+	}
+	if want, got := d, p.w; want != got {
+		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+	}
+}
 
 func Test_newClient(t *testing.T) {
 	var tests = []struct {
@@ -161,3 +213,40 @@ func Test_firstIPv4Addr(t *testing.T) {
 		}
 	}
 }
+
+// deadlineCapturePacketConn is a net.PacketConn which captures read and
+// write deadlines.
+type deadlineCapturePacketConn struct {
+	r time.Time
+	w time.Time
+
+	noopPacketConn
+}
+
+func (p *deadlineCapturePacketConn) SetDeadline(t time.Time) error {
+	p.r = t
+	p.w = t
+	return nil
+}
+func (p *deadlineCapturePacketConn) SetReadDeadline(t time.Time) error {
+	p.r = t
+	return nil
+}
+func (p *deadlineCapturePacketConn) SetWriteDeadline(t time.Time) error {
+	p.w = t
+	return nil
+}
+
+// noopPacketConn is a net.PacketConn which simply no-ops any input.  It is
+// embedded in other implementations so they do not have to implement every
+// single method.
+type noopPacketConn struct{}
+
+func (noopPacketConn) ReadFrom(b []byte) (int, net.Addr, error)     { return 0, nil, nil }
+func (noopPacketConn) WriteTo(b []byte, addr net.Addr) (int, error) { return 0, nil }
+
+func (noopPacketConn) Close() error                       { return nil }
+func (noopPacketConn) LocalAddr() net.Addr                { return nil }
+func (noopPacketConn) SetDeadline(t time.Time) error      { return nil }
+func (noopPacketConn) SetReadDeadline(t time.Time) error  { return nil }
+func (noopPacketConn) SetWriteDeadline(t time.Time) error { return nil }
