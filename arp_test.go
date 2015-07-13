@@ -10,6 +10,120 @@ import (
 	"github.com/mdlayher/ethernet"
 )
 
+func TestNewPacket(t *testing.T) {
+	zeroMAC := net.HardwareAddr{0, 0, 0, 0, 0, 0}
+
+	var tests = []struct {
+		desc   string
+		op     Operation
+		srcMAC net.HardwareAddr
+		srcIP  net.IP
+		dstMAC net.HardwareAddr
+		dstIP  net.IP
+		p      *Packet
+		err    error
+	}{
+		{
+			desc:   "short source MAC address",
+			srcMAC: net.HardwareAddr{0, 0, 0, 0, 0},
+			err:    ErrInvalidMAC,
+		},
+		{
+			desc:   "short destination MAC address",
+			srcMAC: zeroMAC,
+			dstMAC: net.HardwareAddr{0, 0, 0, 0, 0},
+			err:    ErrInvalidMAC,
+		},
+		{
+			desc:   "MAC address length mismatch",
+			srcMAC: zeroMAC,
+			dstMAC: net.HardwareAddr{0, 0, 0, 0, 0, 0, 0, 0},
+			err:    ErrInvalidMAC,
+		},
+		{
+			desc:   "short source IPv4 address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IP{0, 0, 0},
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "long source IPv4 address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IP{0, 0, 0, 0, 0},
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "IPv6 source IP address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IPv6zero,
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "short destination IPv4 address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IPv4zero,
+			dstIP:  net.IP{0, 0, 0},
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "long destination IPv4 address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IPv4zero,
+			dstIP:  net.IP{0, 0, 0, 0, 0},
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "IPv6 destination IP address",
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IPv4zero,
+			dstIP:  net.IPv6zero,
+			err:    ErrInvalidIP,
+		},
+		{
+			desc:   "OK",
+			op:     OperationRequest,
+			srcMAC: zeroMAC,
+			dstMAC: zeroMAC,
+			srcIP:  net.IPv4zero,
+			dstIP:  net.IPv4zero,
+			p: &Packet{
+				HardwareType: 1,
+				ProtocolType: uint16(ethernet.EtherTypeIPv4),
+				MACLength:    6,
+				IPLength:     4,
+				Operation:    OperationRequest,
+				SenderMAC:    zeroMAC,
+				SenderIP:     net.IPv4zero.To4(),
+				TargetMAC:    zeroMAC,
+				TargetIP:     net.IPv4zero.To4(),
+			},
+		},
+	}
+
+	for i, tt := range tests {
+		p, err := NewPacket(tt.op, tt.srcMAC, tt.srcIP, tt.dstMAC, tt.dstIP)
+		if err != nil {
+			if want, got := tt.err, err; want != got {
+				t.Fatalf("[%02d] test %q, unexpected error: %v != %v",
+					i, tt.desc, want, got)
+			}
+
+			continue
+		}
+
+		if want, got := tt.p, p; !reflect.DeepEqual(want, got) {
+			t.Fatalf("[%02d] test %q, unexpected Packet:\n- want: %v\n-  got: %v",
+				i, tt.desc, want, got)
+		}
+	}
+}
+
 func TestPacketMarshalBinary(t *testing.T) {
 	zeroMAC := net.HardwareAddr{0, 0, 0, 0, 0, 0}
 	ip1 := net.IP{192, 168, 1, 10}
