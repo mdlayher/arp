@@ -125,8 +125,7 @@ func (c *conn) serve() {
 	// Default to DefaultServeMux if handler is not available
 	handler := c.server.Handler
 	if handler == nil {
-		// BUG(mdlayher): implement ServeMux type
-		// handler = DefaultServeMux
+		handler = DefaultServeMux
 	}
 
 	handler.ServeARP(w, r)
