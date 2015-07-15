@@ -18,7 +18,7 @@ var (
 )
 
 // A Client is an ARP client, which can be used to send ARP requests to
-// retrieve the MAC address of a machine using its IPv4 address.
+// retrieve the hardware address of a machine using its IPv4 address.
 type Client struct {
 	ifi *net.Interface
 	ip  net.IP
@@ -67,10 +67,10 @@ func (c *Client) Close() error {
 	return c.p.Close()
 }
 
-// Request performs an ARP request, attempting to retrieve the MAC address
+// Request performs an ARP request, attempting to retrieve the hardware address
 // of a machine using its IPv4 address.
 func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
-	// Create ARP packet addressed to broadcast MAC to attempt to find the
+	// Create ARP packet for broadcast address to attempt to find the
 	// hardware address of the input IP address
 	arp, err := NewPacket(OperationRequest, c.ifi.HardwareAddr, c.ip, ethernet.Broadcast, ip)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		return nil, err
 	}
 
-	// Create ethernet frame addressed to broadcast MAC to encapsulate the
+	// Create ethernet frame addressed to broadcast address to encapsulate the
 	// ARP packet
 	eth := &ethernet.Frame{
 		DestinationHardwareAddr: ethernet.Broadcast,
@@ -111,7 +111,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		}
 
 		// Unmarshal ethernet frame and check:
-		//   - Frame is for our MAC address
+		//   - Frame is for our hardware address
 		//   - Frame has ARP EtherType
 		if err := eth.UnmarshalBinary(buf[:n]); err != nil {
 			return nil, err
@@ -126,7 +126,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		// Unmarshal ARP packet and check:
 		//   - Packet is a reply, not a request
 		//   - Packet is for our IP address
-		//   - Packet is for our MAC address
+		//   - Packet is for our hardware address
 		if err := arp.UnmarshalBinary(eth.Payload); err != nil {
 			return nil, err
 		}
@@ -136,11 +136,11 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		if !bytes.Equal(arp.TargetIP, c.ip) {
 			continue
 		}
-		if !bytes.Equal(arp.TargetMAC, c.ifi.HardwareAddr) {
+		if !bytes.Equal(arp.TargetHardwareAddr, c.ifi.HardwareAddr) {
 			continue
 		}
 
-		return arp.SenderMAC, nil
+		return arp.SenderHardwareAddr, nil
 	}
 }
 

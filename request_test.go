@@ -32,10 +32,10 @@ func Test_parseRequest(t *testing.T) {
 				0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0,
 				0x08, 0x06,
-				// ARP packet with misleading MAC address length
+				// ARP packet with misleading hardware address length
 				0, 0,
 				0, 0,
-				255, 255, // Misleading MAC address length
+				255, 255, // Misleading hardware address length
 			}, make([]byte, 40)...),
 			err: io.ErrUnexpectedEOF,
 		},
@@ -58,11 +58,11 @@ func Test_parseRequest(t *testing.T) {
 				192, 168, 1, 1,
 			}, make([]byte, 40)...),
 			r: &Request{
-				Operation: OperationReply,
-				SenderMAC: net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-				SenderIP:  net.IP{192, 168, 1, 10},
-				TargetMAC: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-				TargetIP:  net.IP{192, 168, 1, 1},
+				Operation:          OperationReply,
+				SenderHardwareAddr: net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+				SenderIP:           net.IP{192, 168, 1, 10},
+				TargetHardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
+				TargetIP:           net.IP{192, 168, 1, 1},
 			},
 		},
 	}

@@ -36,11 +36,11 @@ func main() {
 	arp.HandleFunc(arp.OperationRequest, func(w arp.ResponseSender, r *arp.Request) {
 		// Ignore ARP requests which are not broadcast or bound directly for
 		// this machine
-		if !bytes.Equal(r.TargetMAC, ethernet.Broadcast) && !bytes.Equal(r.TargetMAC, ifi.HardwareAddr) {
+		if !bytes.Equal(r.TargetHardwareAddr, ethernet.Broadcast) && !bytes.Equal(r.TargetHardwareAddr, ifi.HardwareAddr) {
 			return
 		}
 
-		log.Printf("request: who-has %s?  tell %s (%s)", r.TargetIP, r.SenderIP, r.SenderMAC)
+		log.Printf("request: who-has %s?  tell %s (%s)", r.TargetIP, r.SenderIP, r.SenderHardwareAddr)
 
 		// Ignore ARP requests which do not indicate the target IP
 		if !bytes.Equal(r.TargetIP, ip) {
@@ -53,7 +53,7 @@ func main() {
 			arp.OperationReply,
 			ifi.HardwareAddr,
 			ip,
-			r.SenderMAC,
+			r.SenderHardwareAddr,
 			r.SenderIP,
 		)
 		if err != nil {

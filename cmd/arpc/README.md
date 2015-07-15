@@ -2,7 +2,7 @@ arpc
 =====
 
 Command `arpc` provides a simple ARP client which can be used to retrieve
-MAC addresses of other machines in a LAN using their IPv4 addresses.
+hardware addresses of other machines in a LAN using their IPv4 addresses.
 
 Usage
 -----
@@ -15,7 +15,7 @@ Usage of ./arpc:
   -ip="": IPv4 address destination for ARP request
 ```
 
-Request MAC address for IPv4 address:
+Request hardware address for IPv4 address:
 
 ```
 $ ./arpc -i eth0 -ip 192.168.1.1

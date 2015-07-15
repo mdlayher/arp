@@ -8,14 +8,14 @@ import (
 	"testing"
 )
 
-func TestClientRequestInvalidSourceMAC(t *testing.T) {
+func TestClientRequestInvalidSourceHardwareAddr(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{},
 	}
 
 	_, got := c.Request(net.IPv4zero)
-	if want := ErrInvalidMAC; want != got {
-		t.Fatalf("unexpected error for invalid source MAC:\n- want: %v\n-  got: %v",
+	if want := ErrInvalidHardwareAddr; want != got {
+		t.Fatalf("unexpected error for invalid source hardware address:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 }
@@ -92,7 +92,7 @@ func TestClientRequestEthernetFrameUnexpectedEOF(t *testing.T) {
 	}
 }
 
-func TestClientRequestEthernetFrameWrongDestinationMAC(t *testing.T) {
+func TestClientRequestEthernetFrameWrongDestinationHardwareAddr(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
@@ -100,7 +100,7 @@ func TestClientRequestEthernetFrameWrongDestinationMAC(t *testing.T) {
 		ip: net.IPv4zero,
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
-				// Ethernet frame with wrong destination MAC address
+				// Ethernet frame with wrong destination hardware address
 				0, 0, 0, 0, 0, 0, // Wrong destination
 				0, 0, 0, 0, 0, 0,
 				0x00, 0x00,
@@ -110,7 +110,7 @@ func TestClientRequestEthernetFrameWrongDestinationMAC(t *testing.T) {
 
 	_, got := c.Request(net.IPv4zero)
 	if want := io.EOF; want != got {
-		t.Fatalf("unexpected error while reading ethernet frame with wrong destination MAC:\n- want: %v\n-  got: %v",
+		t.Fatalf("unexpected error while reading ethernet frame with wrong destination hardware address:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 }
@@ -150,10 +150,10 @@ func TestClientRequestARPPacketUnexpectedEOF(t *testing.T) {
 				0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0,
 				0x08, 0x06,
-				// ARP packet with misleading MAC address length
+				// ARP packet with misleading hardware address length
 				0, 0,
 				0, 0,
-				255, 255, // Misleading MAC address length
+				255, 255, // Misleading hardware address length
 			}, make([]byte, 40)...)),
 		},
 	}
@@ -231,7 +231,7 @@ func TestClientRequestARPResponseWrongTargetIP(t *testing.T) {
 	}
 }
 
-func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
+func TestClientRequestARPResponseWrongTargetHardwareAddr(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
@@ -243,7 +243,7 @@ func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
 				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
 				0, 0, 0, 0, 0, 0,
 				0x08, 0x06,
-				// ARP Packet not bound for this MAC address
+				// ARP Packet not bound for this hardware address
 				0, 1,
 				0x08, 0x06,
 				6,
@@ -251,7 +251,7 @@ func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
 				0, 2,
 				0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0,
-				0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, // Wrong MAC address
+				0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, // Wrong hardware address
 				192, 168, 1, 1,
 			}, make([]byte, 46)...)),
 		},
@@ -259,7 +259,7 @@ func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
 
 	_, got := c.Request(net.IPv4zero)
 	if want := io.EOF; want != got {
-		t.Fatalf("unexpected error while reading ARP response with wrong target MAC:\n- want: %v\n-  got: %v",
+		t.Fatalf("unexpected error while reading ARP response with wrong target hardware address:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 }
@@ -290,14 +290,14 @@ func TestClientRequestOK(t *testing.T) {
 		},
 	}
 
-	wantMAC := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
-	gotMAC, err := c.Request(net.IPv4zero)
+	wantHW := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
+	gotHW, err := c.Request(net.IPv4zero)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if want, got := wantMAC, gotMAC; !bytes.Equal(want, got) {
-		t.Fatalf("unexpected MAC address for request:\n- want: %v\n-  got: %v",
+	if want, got := wantHW, gotHW; !bytes.Equal(want, got) {
+		t.Fatalf("unexpected hardware address for request:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 }

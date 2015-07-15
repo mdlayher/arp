@@ -11,103 +11,103 @@ import (
 )
 
 func TestNewPacket(t *testing.T) {
-	zeroMAC := net.HardwareAddr{0, 0, 0, 0, 0, 0}
+	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
 
 	var tests = []struct {
-		desc   string
-		op     Operation
-		srcMAC net.HardwareAddr
-		srcIP  net.IP
-		dstMAC net.HardwareAddr
-		dstIP  net.IP
-		p      *Packet
-		err    error
+		desc  string
+		op    Operation
+		srcHW net.HardwareAddr
+		srcIP net.IP
+		dstHW net.HardwareAddr
+		dstIP net.IP
+		p     *Packet
+		err   error
 	}{
 		{
-			desc:   "short source MAC address",
-			srcMAC: net.HardwareAddr{0, 0, 0, 0, 0},
-			err:    ErrInvalidMAC,
+			desc:  "short source hardware address",
+			srcHW: net.HardwareAddr{0, 0, 0, 0, 0},
+			err:   ErrInvalidHardwareAddr,
 		},
 		{
-			desc:   "short destination MAC address",
-			srcMAC: zeroMAC,
-			dstMAC: net.HardwareAddr{0, 0, 0, 0, 0},
-			err:    ErrInvalidMAC,
+			desc:  "short destination hardware address",
+			srcHW: zeroHW,
+			dstHW: net.HardwareAddr{0, 0, 0, 0, 0},
+			err:   ErrInvalidHardwareAddr,
 		},
 		{
-			desc:   "MAC address length mismatch",
-			srcMAC: zeroMAC,
-			dstMAC: net.HardwareAddr{0, 0, 0, 0, 0, 0, 0, 0},
-			err:    ErrInvalidMAC,
+			desc:  "hardware address length mismatch",
+			srcHW: zeroHW,
+			dstHW: net.HardwareAddr{0, 0, 0, 0, 0, 0, 0, 0},
+			err:   ErrInvalidHardwareAddr,
 		},
 		{
-			desc:   "short source IPv4 address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IP{0, 0, 0},
-			err:    ErrInvalidIP,
+			desc:  "short source IPv4 address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IP{0, 0, 0},
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "long source IPv4 address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IP{0, 0, 0, 0, 0},
-			err:    ErrInvalidIP,
+			desc:  "long source IPv4 address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IP{0, 0, 0, 0, 0},
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "IPv6 source IP address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IPv6zero,
-			err:    ErrInvalidIP,
+			desc:  "IPv6 source IP address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IPv6zero,
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "short destination IPv4 address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IPv4zero,
-			dstIP:  net.IP{0, 0, 0},
-			err:    ErrInvalidIP,
+			desc:  "short destination IPv4 address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IPv4zero,
+			dstIP: net.IP{0, 0, 0},
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "long destination IPv4 address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IPv4zero,
-			dstIP:  net.IP{0, 0, 0, 0, 0},
-			err:    ErrInvalidIP,
+			desc:  "long destination IPv4 address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IPv4zero,
+			dstIP: net.IP{0, 0, 0, 0, 0},
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "IPv6 destination IP address",
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IPv4zero,
-			dstIP:  net.IPv6zero,
-			err:    ErrInvalidIP,
+			desc:  "IPv6 destination IP address",
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IPv4zero,
+			dstIP: net.IPv6zero,
+			err:   ErrInvalidIP,
 		},
 		{
-			desc:   "OK",
-			op:     OperationRequest,
-			srcMAC: zeroMAC,
-			dstMAC: zeroMAC,
-			srcIP:  net.IPv4zero,
-			dstIP:  net.IPv4zero,
+			desc:  "OK",
+			op:    OperationRequest,
+			srcHW: zeroHW,
+			dstHW: zeroHW,
+			srcIP: net.IPv4zero,
+			dstIP: net.IPv4zero,
 			p: &Packet{
-				HardwareType: 1,
-				ProtocolType: uint16(ethernet.EtherTypeIPv4),
-				MACLength:    6,
-				IPLength:     4,
-				Operation:    OperationRequest,
-				SenderMAC:    zeroMAC,
-				SenderIP:     net.IPv4zero.To4(),
-				TargetMAC:    zeroMAC,
-				TargetIP:     net.IPv4zero.To4(),
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 6,
+				IPLength:           4,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: zeroHW,
+				SenderIP:           net.IPv4zero.To4(),
+				TargetHardwareAddr: zeroHW,
+				TargetIP:           net.IPv4zero.To4(),
 			},
 		},
 	}
 
 	for i, tt := range tests {
-		p, err := NewPacket(tt.op, tt.srcMAC, tt.srcIP, tt.dstMAC, tt.dstIP)
+		p, err := NewPacket(tt.op, tt.srcHW, tt.srcIP, tt.dstHW, tt.dstIP)
 		if err != nil {
 			if want, got := tt.err, err; want != got {
 				t.Fatalf("[%02d] test %q, unexpected error: %v != %v",
@@ -125,7 +125,7 @@ func TestNewPacket(t *testing.T) {
 }
 
 func TestPacketMarshalBinary(t *testing.T) {
-	zeroMAC := net.HardwareAddr{0, 0, 0, 0, 0, 0}
+	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
 	ip1 := net.IP{192, 168, 1, 10}
 	ip2 := net.IP{192, 168, 1, 1}
 
@@ -138,17 +138,17 @@ func TestPacketMarshalBinary(t *testing.T) {
 		b    []byte
 	}{
 		{
-			desc: "ARP request to ethernet broadcast, 6 byte MAC addresses",
+			desc: "ARP request to ethernet broadcast, 6 byte hardware addresses",
 			p: &Packet{
-				HardwareType: 1,
-				ProtocolType: uint16(ethernet.EtherTypeIPv4),
-				MACLength:    6,
-				IPLength:     4,
-				Operation:    OperationRequest,
-				SenderMAC:    zeroMAC,
-				SenderIP:     ip1,
-				TargetMAC:    ethernet.Broadcast,
-				TargetIP:     ip2,
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 6,
+				IPLength:           4,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: zeroHW,
+				SenderIP:           ip1,
+				TargetHardwareAddr: ethernet.Broadcast,
+				TargetIP:           ip2,
 			},
 			b: []byte{
 				0, 1,
@@ -163,17 +163,17 @@ func TestPacketMarshalBinary(t *testing.T) {
 			},
 		},
 		{
-			desc: "ARP reply over infiniband, 20 byte MAC addresses",
+			desc: "ARP reply over infiniband, 20 byte hardware addresses",
 			p: &Packet{
-				HardwareType: 32,
-				ProtocolType: uint16(ethernet.EtherTypeIPv4),
-				MACLength:    20,
-				IPLength:     4,
-				Operation:    OperationReply,
-				SenderMAC:    iboip1,
-				SenderIP:     ip1,
-				TargetMAC:    iboip2,
-				TargetIP:     ip2,
+				HardwareType:       32,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 20,
+				IPLength:           4,
+				Operation:          OperationReply,
+				SenderHardwareAddr: iboip1,
+				SenderIP:           ip1,
+				TargetHardwareAddr: iboip2,
+				TargetIP:           ip2,
 			},
 			b: []byte{
 				0, 32,
@@ -205,7 +205,7 @@ func TestPacketMarshalBinary(t *testing.T) {
 }
 
 func TestPacketUnmarshalBinary(t *testing.T) {
-	zeroMAC := net.HardwareAddr{0, 0, 0, 0, 0, 0}
+	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
 	ip1 := net.IP{192, 168, 1, 10}
 	ip2 := net.IP{192, 168, 1, 1}
 
@@ -224,7 +224,7 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 			err:  io.ErrUnexpectedEOF,
 		},
 		{
-			desc: "short buffer, too short for MAC addresses",
+			desc: "short buffer, too short for hardware addresses",
 			b: []byte{
 				0, 1,
 				8, 0,
@@ -246,7 +246,7 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 			err: io.ErrUnexpectedEOF,
 		},
 		{
-			desc: "ARP request to ethernet broadcast, 6 byte MAC addresses",
+			desc: "ARP request to ethernet broadcast, 6 byte hardware addresses",
 			b: []byte{
 				0, 1,
 				8, 0,
@@ -259,19 +259,19 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 				192, 168, 1, 1,
 			},
 			p: &Packet{
-				HardwareType: 1,
-				ProtocolType: uint16(ethernet.EtherTypeIPv4),
-				MACLength:    6,
-				IPLength:     4,
-				Operation:    OperationRequest,
-				SenderMAC:    zeroMAC,
-				SenderIP:     ip1,
-				TargetMAC:    ethernet.Broadcast,
-				TargetIP:     ip2,
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 6,
+				IPLength:           4,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: zeroHW,
+				SenderIP:           ip1,
+				TargetHardwareAddr: ethernet.Broadcast,
+				TargetIP:           ip2,
 			},
 		},
 		{
-			desc: "ARP reply over infiniband, 20 byte MAC addresses",
+			desc: "ARP reply over infiniband, 20 byte hardware addresses",
 			b: []byte{
 				0, 32,
 				8, 0,
@@ -286,15 +286,15 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 				192, 168, 1, 1,
 			},
 			p: &Packet{
-				HardwareType: 32,
-				ProtocolType: uint16(ethernet.EtherTypeIPv4),
-				MACLength:    20,
-				IPLength:     4,
-				Operation:    OperationReply,
-				SenderMAC:    iboip1,
-				SenderIP:     ip1,
-				TargetMAC:    iboip2,
-				TargetIP:     ip2,
+				HardwareType:       32,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 20,
+				IPLength:           4,
+				Operation:          OperationReply,
+				SenderHardwareAddr: iboip1,
+				SenderIP:           ip1,
+				TargetHardwareAddr: iboip2,
+				TargetIP:           ip2,
 			},
 		},
 	}

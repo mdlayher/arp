@@ -21,14 +21,16 @@ type Request struct {
 	// or reply.
 	Operation Operation
 
-	// SenderMAC specifies the MAC address of the sender of this Request.
-	SenderMAC net.HardwareAddr
+	// SenderHardwareAddr specifies the hardware address of the sender of this
+	// Request.
+	SenderHardwareAddr net.HardwareAddr
 
 	// SenderIP specifies the IPv4 address of the sender of this Request.
 	SenderIP net.IP
 
-	// TargetMAC specifies the MAC address of the target of this Request.
-	TargetMAC net.HardwareAddr
+	// TargetHardwareAddr specifies the hardware address of the target of this
+	// Request.
+	TargetHardwareAddr net.HardwareAddr
 
 	// TargetIP specifies the IPv4 address of the target of this Request.
 	TargetIP net.IP
@@ -52,10 +54,10 @@ func parseRequest(buf []byte) (*Request, error) {
 	}
 
 	return &Request{
-		Operation: p.Operation,
-		SenderMAC: p.SenderMAC,
-		SenderIP:  p.SenderIP,
-		TargetMAC: p.TargetMAC,
-		TargetIP:  p.TargetIP,
+		Operation:          p.Operation,
+		SenderHardwareAddr: p.SenderHardwareAddr,
+		SenderIP:           p.SenderIP,
+		TargetHardwareAddr: p.TargetHardwareAddr,
+		TargetIP:           p.TargetIP,
 	}, nil
 }

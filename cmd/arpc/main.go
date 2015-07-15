@@ -1,5 +1,5 @@
-// Command arpc provides a simple ARP client which can be used to retrieve MAC
-// addresses of other machines in a LAN using their IPv4 address.
+// Command arpc provides a simple ARP client which can be used to retrieve
+// hardware addresses of other machines in a LAN using their IPv4 address.
 package main
 
 import (
@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Request MAC address for IP address
+	// Request hardware address for IP address
 	ip := net.ParseIP(*ipFlag).To4()
 	mac, err := c.Request(ip)
 	if err != nil {

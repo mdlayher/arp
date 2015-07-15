@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	// ErrInvalidMAC is returned when one or more invalid MAC addresses are
-	// passed to NewPacket.
-	ErrInvalidMAC = errors.New("invalid MAC address")
+	// ErrInvalidHardwareAddr is returned when one or more invalid hardware
+	// addresses are passed to NewPacket.
+	ErrInvalidHardwareAddr = errors.New("invalid hardware address")
 
 	// ErrInvalidIP is returned when one or more invalid IPv4 addresses are
 	// passed to NewPacket.
@@ -38,9 +38,9 @@ type Packet struct {
 	// request is intended.  Typically, this is the IPv4 EtherType.
 	ProtocolType uint16
 
-	// MACLength specifies the length of the sender and target MAC addresses
-	// included in a Packet.
-	MACLength uint8
+	// HardwareAddrLength specifies the length of the sender and target
+	// hardware addresses included in a Packet.
+	HardwareAddrLength uint8
 
 	// IPLength specifies the length of the sender and target IPv4 addresses
 	// included in a Packet.
@@ -50,37 +50,39 @@ type Packet struct {
 	// or reply.
 	Operation Operation
 
-	// SenderMAC specifies the MAC address of the sender of this Packet.
-	SenderMAC net.HardwareAddr
+	// SenderHardwareAddr specifies the hardware address of the sender of this
+	// Packet.
+	SenderHardwareAddr net.HardwareAddr
 
 	// SenderIP specifies the IPv4 address of the sender of this Packet.
 	SenderIP net.IP
 
-	// TargetMAC specifies the MAC address of the target of this Packet.
-	TargetMAC net.HardwareAddr
+	// TargetHardwareAddr specifies the hardware address of the target of this
+	// Packet.
+	TargetHardwareAddr net.HardwareAddr
 
 	// TargetIP specifies the IPv4 address of the target of this Packet.
 	TargetIP net.IP
 }
 
-// NewPacket creates a new Packet from an input Operation and MAC/IPv4 address
-// values for both a sender and target.
+// NewPacket creates a new Packet from an input Operation and hardware/IPv4
+// address values for both a sender and target.
 //
-// If either MAC address is less than 6 bytes in length, or there is a length
-// mismatch between the two, ErrInvalidMAC is returned.
+// If either hardware address is less than 6 bytes in length, or there is a
+// length mismatch between the two, ErrInvalidHardwareAddr is returned.
 //
 // If either IP address is not an IPv4 address, or there is a length mismatch
 // between the two, ErrInvalidIP is returned.
-func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.HardwareAddr, dstIP net.IP) (*Packet, error) {
-	// Validate MAC addresses for minimum length, and matching length
-	if len(srcMAC) < 6 {
-		return nil, ErrInvalidMAC
+func NewPacket(op Operation, srcHW net.HardwareAddr, srcIP net.IP, dstHW net.HardwareAddr, dstIP net.IP) (*Packet, error) {
+	// Validate hardware addresses for minimum length, and matching length
+	if len(srcHW) < 6 {
+		return nil, ErrInvalidHardwareAddr
 	}
-	if len(dstMAC) < 6 {
-		return nil, ErrInvalidMAC
+	if len(dstHW) < 6 {
+		return nil, ErrInvalidHardwareAddr
 	}
-	if len(srcMAC) != len(dstMAC) {
-		return nil, ErrInvalidMAC
+	if len(srcHW) != len(dstHW) {
+		return nil, ErrInvalidHardwareAddr
 	}
 
 	// Validate IP addresses to ensure they are IPv4 addresses, and
@@ -103,13 +105,13 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 		ProtocolType: uint16(ethernet.EtherTypeIPv4),
 
 		// Populate other fields using input data
-		MACLength: uint8(len(srcMAC)),
-		IPLength:  uint8(len(srcIP)),
-		Operation: op,
-		SenderMAC: srcMAC,
-		SenderIP:  srcIP,
-		TargetMAC: dstMAC,
-		TargetIP:  dstIP,
+		HardwareAddrLength: uint8(len(srcHW)),
+		IPLength:           uint8(len(srcIP)),
+		Operation:          op,
+		SenderHardwareAddr: srcHW,
+		SenderIP:           srcIP,
+		TargetHardwareAddr: dstHW,
+		TargetIP:           dstIP,
 	}, nil
 }
 
@@ -126,14 +128,14 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 	// 4 bytes: source protocol address
 	// N bytes: target hardware address
 	// 4 bytes: target protocol address
-	b := make([]byte, 2+2+1+1+2+4+4+(p.MACLength*2))
+	b := make([]byte, 2+2+1+1+2+4+4+(p.HardwareAddrLength*2))
 
 	// Marshal fixed length data
 
 	binary.BigEndian.PutUint16(b[0:2], p.HardwareType)
 	binary.BigEndian.PutUint16(b[2:4], p.ProtocolType)
 
-	b[4] = p.MACLength
+	b[4] = p.HardwareAddrLength
 	b[5] = p.IPLength
 
 	binary.BigEndian.PutUint16(b[6:8], uint16(p.Operation))
@@ -142,16 +144,16 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 	// defined in p
 
 	n := 8
-	hal := int(p.MACLength)
+	hal := int(p.HardwareAddrLength)
 	pl := int(p.IPLength)
 
-	copy(b[n:n+hal], p.SenderMAC)
+	copy(b[n:n+hal], p.SenderHardwareAddr)
 	n += hal
 
 	copy(b[n:n+pl], p.SenderIP)
 	n += pl
 
-	copy(b[n:n+hal], p.TargetMAC)
+	copy(b[n:n+hal], p.TargetHardwareAddr)
 	n += hal
 
 	copy(b[n:n+pl], p.TargetIP)
@@ -161,7 +163,7 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary unmarshals a raw byte slice into a Packet.
 func (p *Packet) UnmarshalBinary(b []byte) error {
-	// Must have enough room to retrieve MAC and IP lengths
+	// Must have enough room to retrieve hardware address and IP lengths
 	if len(b) < 8 {
 		return io.ErrUnexpectedEOF
 	}
@@ -171,7 +173,7 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 	p.HardwareType = binary.BigEndian.Uint16(b[0:2])
 	p.ProtocolType = binary.BigEndian.Uint16(b[2:4])
 
-	p.MACLength = b[4]
+	p.HardwareAddrLength = b[4]
 	p.IPLength = b[5]
 
 	p.Operation = Operation(binary.BigEndian.Uint16(b[6:8]))
@@ -179,17 +181,17 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 	// Unmarshal variable length data at correct offset using lengths
 	// defined by ml and il
 	n := 8
-	ml := int(p.MACLength)
+	ml := int(p.HardwareAddrLength)
 	il := int(p.IPLength)
 
-	// Must have enough room to retrieve both MAC and IP addresses
+	// Must have enough room to retrieve both hardware address and IP addresses
 	if len(b) < 8+(2*ml)+(2*il) {
 		return io.ErrUnexpectedEOF
 	}
 
 	sha := make(net.HardwareAddr, ml)
 	copy(sha, b[n:n+ml])
-	p.SenderMAC = sha
+	p.SenderHardwareAddr = sha
 	n += ml
 
 	spa := make(net.IP, il)
@@ -199,7 +201,7 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 
 	tha := make(net.HardwareAddr, ml)
 	copy(tha, b[n:n+ml])
-	p.TargetMAC = tha
+	p.TargetHardwareAddr = tha
 	n += ml
 
 	tpa := make(net.IP, il)

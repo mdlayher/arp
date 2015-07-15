@@ -147,8 +147,8 @@ func (r *response) Send(p *Packet) (int, error) {
 	}
 
 	f := &ethernet.Frame{
-		DestinationHardwareAddr: p.TargetMAC,
-		SourceHardwareAddr:      p.SenderMAC,
+		DestinationHardwareAddr: p.TargetHardwareAddr,
+		SourceHardwareAddr:      p.SenderHardwareAddr,
 		EtherType:               ethernet.EtherTypeARP,
 		Payload:                 pb,
 	}

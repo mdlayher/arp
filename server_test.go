@@ -64,15 +64,15 @@ func TestServeNoResponse(t *testing.T) {
 			t.Fatalf("unexpected request operation: %v != %v", want, got)
 		}
 
-		if want, got := (net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}), r.SenderMAC; !bytes.Equal(want, got) {
-			t.Fatalf("unexpected request sender MAC:\n- want: %v\n-  got: %v", want, got)
+		if want, got := (net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}), r.SenderHardwareAddr; !bytes.Equal(want, got) {
+			t.Fatalf("unexpected request sender hardware address:\n- want: %v\n-  got: %v", want, got)
 		}
 		if want, got := (net.IP{192, 168, 1, 10}), r.SenderIP; !bytes.Equal(want, got) {
 			t.Fatalf("unexpected request sender IP:\n- want: %v\n-  got: %v", want, got)
 		}
 
-		if want, got := (net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad}), r.TargetMAC; !bytes.Equal(want, got) {
-			t.Fatalf("unexpected request target MAC:\n- want: %v\n-  got: %v", want, got)
+		if want, got := (net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad}), r.TargetHardwareAddr; !bytes.Equal(want, got) {
+			t.Fatalf("unexpected request target hardware address:\n- want: %v\n-  got: %v", want, got)
 		}
 		if want, got := (net.IP{192, 168, 1, 1}), r.TargetIP; !bytes.Equal(want, got) {
 			t.Fatalf("unexpected request target IP:\n- want: %v\n-  got: %v", want, got)
@@ -106,10 +106,10 @@ func TestServeOK(t *testing.T) {
 	}, make([]byte, 40)...)
 
 	// Values to be sent in ARP reply and checked later
-	wantsMAC := net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad}
+	wantsHW := net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad}
 	wantsIP := net.IP{192, 168, 1, 1}
 
-	wanttMAC := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
+	wanttHW := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
 	wanttIP := net.IP{192, 168, 1, 10}
 
 	// Count bytes sent
@@ -118,9 +118,9 @@ func TestServeOK(t *testing.T) {
 		// Build an ARP reply for request
 		pkt, err := NewPacket(
 			OperationReply,
-			r.TargetMAC,
+			r.TargetHardwareAddr,
 			r.TargetIP,
-			r.SenderMAC,
+			r.SenderHardwareAddr,
 			r.SenderIP,
 		)
 		if err != nil {
@@ -148,11 +148,11 @@ func TestServeOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want, got := wanttMAC, f.DestinationHardwareAddr; !bytes.Equal(want, got) {
+	if want, got := wanttHW, f.DestinationHardwareAddr; !bytes.Equal(want, got) {
 		t.Fatalf("unexpected ethernet frame destination:\n- want: %v\n-  got: %v",
 			want, got)
 	}
-	if want, got := wantsMAC, f.SourceHardwareAddr; !bytes.Equal(want, got) {
+	if want, got := wantsHW, f.SourceHardwareAddr; !bytes.Equal(want, got) {
 		t.Fatalf("unexpected ethernet frame source:\n- want: %v\n-  got: %v",
 			want, got)
 	}
@@ -175,8 +175,8 @@ func TestServeOK(t *testing.T) {
 		t.Fatalf("unexpected ARP packet protocol type: %v != %v", want, got)
 	}
 
-	if want, got := uint8(len(wantsMAC)), pkt.MACLength; want != got {
-		t.Fatalf("unexpected ARP packet MAC length: %v != %v", want, got)
+	if want, got := uint8(len(wantsHW)), pkt.HardwareAddrLength; want != got {
+		t.Fatalf("unexpected ARP packet hardware address length: %v != %v", want, got)
 	}
 	if want, got := uint8(len(wantsIP)), pkt.IPLength; want != got {
 		t.Fatalf("unexpected ARP packet IP length: %v != %v", want, got)
@@ -186,16 +186,16 @@ func TestServeOK(t *testing.T) {
 		t.Fatalf("unexpected ARP packet operation: %v != %v", want, got)
 	}
 
-	if want, got := wantsMAC, pkt.SenderMAC; !bytes.Equal(want, got) {
-		t.Fatalf("unexpected ARP packet sender MAC:\n- want: %v\n-  got: %v",
+	if want, got := wantsHW, pkt.SenderHardwareAddr; !bytes.Equal(want, got) {
+		t.Fatalf("unexpected ARP packet sender hardware address:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 	if want, got := wantsIP, pkt.SenderIP; !bytes.Equal(want, got) {
 		t.Fatalf("unexpected ARP packet sender IP:\n- want: %v\n-  got: %v",
 			want, got)
 	}
-	if want, got := wanttMAC, pkt.TargetMAC; !bytes.Equal(want, got) {
-		t.Fatalf("unexpected ARP packet target MAC:\n- want: %v\n-  got: %v",
+	if want, got := wanttHW, pkt.TargetHardwareAddr; !bytes.Equal(want, got) {
+		t.Fatalf("unexpected ARP packet target hardware address:\n- want: %v\n-  got: %v",
 			want, got)
 	}
 	if want, got := wanttIP, pkt.TargetIP; !bytes.Equal(want, got) {
