@@ -84,10 +84,10 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 	// Create ethernet frame addressed to broadcast MAC to encapsulate the
 	// ARP packet
 	eth := &ethernet.Frame{
-		DestinationMAC: ethernet.Broadcast,
-		SourceMAC:      c.ifi.HardwareAddr,
-		EtherType:      ethernet.EtherTypeARP,
-		Payload:        arpb,
+		DestinationHardwareAddr: ethernet.Broadcast,
+		SourceHardwareAddr:      c.ifi.HardwareAddr,
+		EtherType:               ethernet.EtherTypeARP,
+		Payload:                 arpb,
 	}
 	ethb, err := eth.MarshalBinary()
 	if err != nil {
@@ -116,7 +116,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		if err := eth.UnmarshalBinary(buf[:n]); err != nil {
 			return nil, err
 		}
-		if !bytes.Equal(eth.DestinationMAC, c.ifi.HardwareAddr) {
+		if !bytes.Equal(eth.DestinationHardwareAddr, c.ifi.HardwareAddr) {
 			continue
 		}
 		if eth.EtherType != ethernet.EtherTypeARP {
