@@ -101,6 +101,11 @@ func (c *conn) serve() {
 	// consumption
 	r, err := parseRequest(c.buf)
 	if err != nil {
+		// Ethernet frames with non-ARP EtherType are ignored
+		if err == errInvalidARPPacket {
+			return
+		}
+
 		return
 	}
 
