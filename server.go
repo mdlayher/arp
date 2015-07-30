@@ -42,7 +42,7 @@ func ListenAndServe(iface string, handler Handler) error {
 // network interface specified by s.Iface.  Serve is called to handle serving
 // traffic once ListenAndServe opens a raw ethernet socket.
 func (s *Server) ListenAndServe() error {
-	p, err := raw.ListenPacket(s.Iface, syscall.SOCK_RAW, syscall.ETH_P_ARP)
+	p, err := raw.ListenPacket(s.Iface, syscall.ETH_P_ARP)
 	if err != nil {
 		return err
 	}

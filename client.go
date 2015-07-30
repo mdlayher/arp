@@ -31,7 +31,7 @@ type Client struct {
 func NewClient(ifi *net.Interface) (*Client, error) {
 	// Open raw socket to send and receive ARP packets using ethernet frames
 	// we build ourselves
-	p, err := raw.ListenPacket(ifi, syscall.SOCK_RAW, syscall.ETH_P_ARP)
+	p, err := raw.ListenPacket(ifi, syscall.ETH_P_ARP)
 	if err != nil {
 		return nil, err
 	}
