@@ -147,10 +147,10 @@ func (r *response) Send(p *Packet) (int, error) {
 	}
 
 	f := &ethernet.Frame{
-		DestinationHardwareAddr: p.TargetHardwareAddr,
-		SourceHardwareAddr:      p.SenderHardwareAddr,
-		EtherType:               ethernet.EtherTypeARP,
-		Payload:                 pb,
+		Destination: p.TargetHardwareAddr,
+		Source:      p.SenderHardwareAddr,
+		EtherType:   ethernet.EtherTypeARP,
+		Payload:     pb,
 	}
 
 	fb, err := f.MarshalBinary()

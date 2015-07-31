@@ -148,11 +148,11 @@ func TestServeOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want, got := wanttHW, f.DestinationHardwareAddr; !bytes.Equal(want, got) {
+	if want, got := wanttHW, f.Destination; !bytes.Equal(want, got) {
 		t.Fatalf("unexpected ethernet frame destination:\n- want: %v\n-  got: %v",
 			want, got)
 	}
-	if want, got := wantsHW, f.SourceHardwareAddr; !bytes.Equal(want, got) {
+	if want, got := wantsHW, f.Source; !bytes.Equal(want, got) {
 		t.Fatalf("unexpected ethernet frame source:\n- want: %v\n-  got: %v",
 			want, got)
 	}
