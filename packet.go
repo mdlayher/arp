@@ -184,33 +184,43 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 
 	// Unmarshal variable length data at correct offset using lengths
 	// defined by ml and il
+	//
+	// These variables are meant to improve readability of offset calculations
+	// for the code below
 	n := 8
 	ml := int(p.HardwareAddrLength)
+	ml2 := ml * 2
 	il := int(p.IPLength)
+	il2 := il * 2
 
 	// Must have enough room to retrieve both hardware address and IP addresses
-	if len(b) < 8+(2*ml)+(2*il) {
+	addrl := n + ml2 + il2
+	if len(b) < addrl {
 		return io.ErrUnexpectedEOF
 	}
 
-	sha := make(net.HardwareAddr, ml)
-	copy(sha, b[n:n+ml])
-	p.SenderHardwareAddr = sha
+	// Allocate single byte slice to store address information, which
+	// is resliced into fields
+	bb := make([]byte, addrl-n)
+
+	// Sender hardware address
+	copy(bb[0:ml], b[n:n+ml])
+	p.SenderHardwareAddr = bb[0:ml]
 	n += ml
 
-	spa := make(net.IP, il)
-	copy(spa, b[n:n+il])
-	p.SenderIP = spa
+	// Sender IP address
+	copy(bb[ml:ml+il], b[n:n+il])
+	p.SenderIP = bb[ml : ml+il]
 	n += il
 
-	tha := make(net.HardwareAddr, ml)
-	copy(tha, b[n:n+ml])
-	p.TargetHardwareAddr = tha
+	// Target hardware address
+	copy(bb[ml+il:ml2+il], b[n:n+ml])
+	p.TargetHardwareAddr = bb[ml+il : ml2+il]
 	n += ml
 
-	tpa := make(net.IP, il)
-	copy(tpa, b[n:n+il])
-	p.TargetIP = tpa
+	// Target IP address
+	copy(bb[ml2+il:ml2+il2], b[n:n+il])
+	p.TargetIP = bb[ml2+il : ml2+il2]
 
 	return nil
 }
