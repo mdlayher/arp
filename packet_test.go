@@ -316,3 +316,62 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 		}
 	}
 }
+
+// Benchmarks for Packet.MarshalBinary
+
+func BenchmarkPacketMarshalBinary(b *testing.B) {
+	p, err := NewPacket(
+		OperationRequest,
+		net.HardwareAddr{0xad, 0xbe, 0xef, 0xde, 0xad, 0xde},
+		net.IP{192, 168, 1, 10},
+		net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
+		net.IP{192, 168, 1, 1},
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkPacketMarshalBinary(b, p)
+}
+
+func benchmarkPacketMarshalBinary(b *testing.B, p *Packet) {
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if _, err := p.MarshalBinary(); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// Benchmarks for Packet.UnmarshalBinary
+
+func BenchmarkPacketUnmarshalBinary(b *testing.B) {
+	p, err := NewPacket(
+		OperationRequest,
+		net.HardwareAddr{0xad, 0xbe, 0xef, 0xde, 0xad, 0xde},
+		net.IP{192, 168, 1, 10},
+		net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
+		net.IP{192, 168, 1, 1},
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkPacketUnmarshalBinary(b, p)
+}
+
+func benchmarkPacketUnmarshalBinary(b *testing.B, p *Packet) {
+	pb, err := p.MarshalBinary()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if err := p.UnmarshalBinary(pb); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
