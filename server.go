@@ -3,7 +3,6 @@ package arp
 import (
 	"io"
 	"net"
-	"syscall"
 
 	"github.com/mdlayher/ethernet"
 	"github.com/mdlayher/raw"
@@ -42,7 +41,7 @@ func ListenAndServe(iface string, handler Handler) error {
 // network interface specified by s.Iface.  Serve is called to handle serving
 // traffic once ListenAndServe opens a raw ethernet socket.
 func (s *Server) ListenAndServe() error {
-	p, err := raw.ListenPacket(s.Iface, syscall.ETH_P_ARP)
+	p, err := raw.ListenPacket(s.Iface, raw.ProtocolARP)
 	if err != nil {
 		return err
 	}
