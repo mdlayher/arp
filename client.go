@@ -132,7 +132,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		if arp.Operation != OperationReply {
 			continue
 		}
-		if !bytes.Equal(arp.TargetIP, c.ip) {
+		if !arp.TargetIP.Equal(c.ip) {
 			continue
 		}
 		if !bytes.Equal(arp.TargetHardwareAddr, c.ifi.HardwareAddr) {
