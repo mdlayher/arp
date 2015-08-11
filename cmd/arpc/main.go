@@ -45,7 +45,7 @@ func main() {
 
 	// Request hardware address for IP address
 	ip := net.ParseIP(*ipFlag).To4()
-	mac, err := c.Request(ip)
+	mac, err := c.Resolve(ip)
 	if err != nil {
 		log.Fatal(err)
 	}

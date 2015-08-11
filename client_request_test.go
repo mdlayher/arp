@@ -13,7 +13,7 @@ func TestClientRequestInvalidSourceHardwareAddr(t *testing.T) {
 		ifi: &net.Interface{},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := ErrInvalidHardwareAddr; want != got {
 		t.Fatalf("unexpected error for invalid source hardware address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -27,7 +27,7 @@ func TestClientRequestIPv6Address(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv6loopback)
+	_, got := c.Resolve(net.IPv6loopback)
 	if want := ErrInvalidIP; want != got {
 		t.Fatalf("unexpected error for IPv6 address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -47,7 +47,7 @@ func TestClientRequestErrWriteTo(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := errWriteTo; want != got {
 		t.Fatalf("unexpected error during WriteTo:\n- want: %v\n-  got: %v",
 			want, got)
@@ -67,7 +67,7 @@ func TestClientRequestErrReadFrom(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := errReadFrom; want != got {
 		t.Fatalf("unexpected error during ReadFrom:\n- want: %v\n-  got: %v",
 			want, got)
@@ -85,7 +85,7 @@ func TestClientRequestEthernetFrameUnexpectedEOF(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame:\n- want: %v\n-  got: %v",
 			want, got)
@@ -108,7 +108,7 @@ func TestClientRequestEthernetFrameWrongDestinationHardwareAddr(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong destination hardware address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -131,7 +131,7 @@ func TestClientRequestEthernetFrameWrongEtherType(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong EtherType:\n- want: %v\n-  got: %v",
 			want, got)
@@ -158,7 +158,7 @@ func TestClientRequestARPPacketUnexpectedEOF(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error while reading ARP packet:\n- want: %v\n-  got: %v",
 			want, got)
@@ -191,7 +191,7 @@ func TestClientRequestARPRequestInsteadOfResponse(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong operation type:\n- want: %v\n-  got: %v",
 			want, got)
@@ -224,7 +224,7 @@ func TestClientRequestARPResponseWrongTargetIP(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong target IP:\n- want: %v\n-  got: %v",
 			want, got)
@@ -257,7 +257,7 @@ func TestClientRequestARPResponseWrongSenderIP(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong sender IP:\n- want: %v\n-  got: %v",
 			want, got)
@@ -290,7 +290,7 @@ func TestClientRequestARPResponseWrongTargetHardwareAddr(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong target hardware address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -324,7 +324,7 @@ func TestClientRequestOK(t *testing.T) {
 	}
 
 	wantHW := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
-	gotHW, err := c.Request(net.IPv4(192, 168, 1, 10))
+	gotHW, err := c.Resolve(net.IPv4(192, 168, 1, 10))
 	if err != nil {
 		t.Fatal(err)
 	}

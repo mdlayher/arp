@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"io"
 	"log"
 	"net"
 
@@ -31,47 +32,44 @@ func main() {
 		log.Fatalf("invalid IPv4 address: %q", *ipFlag)
 	}
 
+	client, err := arp.NewClient(ifi)
+	if err != nil {
+		log.Fatalf("couldn't create ARP client: %s", err)
+	}
+
 	// Handle ARP requests bound for designated IPv4 address, using proxy ARP
 	// to indicate that the address belongs to this machine
-	proxyARP := func(w arp.ResponseSender, r *arp.Request) {
+	for {
+		pkt, _, err := client.Read()
+		if err != nil {
+			if err == io.EOF {
+				log.Println("EOF")
+				break
+			}
+			log.Fatalf("error processing ARP requests: %s", err)
+		}
+
 		// Ignore ARP replies
-		if r.Operation != arp.OperationRequest {
-			return
+		if pkt.Operation != arp.OperationRequest {
+			continue
 		}
 
 		// Ignore ARP requests which are not broadcast or bound directly for
 		// this machine
-		if !bytes.Equal(r.TargetHardwareAddr, ethernet.Broadcast) && !bytes.Equal(r.TargetHardwareAddr, ifi.HardwareAddr) {
-			return
+		if !bytes.Equal(pkt.TargetHardwareAddr, ethernet.Broadcast) && !bytes.Equal(pkt.TargetHardwareAddr, ifi.HardwareAddr) {
+			continue
 		}
 
-		log.Printf("request: who-has %s?  tell %s (%s)", r.TargetIP, r.SenderIP, r.SenderHardwareAddr)
+		log.Printf("request: who-has %s?  tell %s (%s)", pkt.TargetIP, pkt.SenderIP, pkt.SenderHardwareAddr)
 
 		// Ignore ARP requests which do not indicate the target IP
-		if !bytes.Equal(r.TargetIP, ip) {
-			return
-		}
-
-		// Send reply indicating that this machine has the requested
-		// IP address
-		p, err := arp.NewPacket(
-			arp.OperationReply,
-			ifi.HardwareAddr,
-			ip,
-			r.SenderHardwareAddr,
-			r.SenderIP,
-		)
-		if err != nil {
-			log.Fatal(err)
+		if !bytes.Equal(pkt.TargetIP, ip) {
+			continue
 		}
 
 		log.Printf("  reply: %s is-at %s", ip, ifi.HardwareAddr)
-		if _, err := w.Send(p); err != nil {
+		if err := client.Reply(pkt, ifi.HardwareAddr, ip); err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	if err := arp.ListenAndServe(*ifaceFlag, arp.HandlerFunc(proxyARP)); err != nil {
-		log.Fatal(err)
 	}
 }
