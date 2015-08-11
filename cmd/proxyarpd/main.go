@@ -63,7 +63,7 @@ func main() {
 		log.Printf("request: who-has %s?  tell %s (%s)", pkt.TargetIP, pkt.SenderIP, pkt.SenderHardwareAddr)
 
 		// Ignore ARP requests which do not indicate the target IP
-		if !bytes.Equal(pkt.TargetIP, ip) {
+		if !pkt.TargetIP.Equal(ip) {
 			continue
 		}
 
