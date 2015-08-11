@@ -1,7 +1,6 @@
 package arp
 
 import (
-	"bytes"
 	"errors"
 	"net"
 	"time"
@@ -96,36 +95,17 @@ func (c *Client) Resolve(ip net.IP) (net.HardwareAddr, error) {
 
 	// Loop and wait for replies
 	for {
-		arp, eth, err := c.Read()
+		arp, _, err := c.Read()
 		if err != nil {
 			return nil, err
 		}
 
-		if !bytes.Equal(eth.Destination, c.ifi.HardwareAddr) {
-			continue
-		}
-		if !c.IsReplyFor(ip, arp) {
+		if arp.Operation != OperationReply || !arp.SenderIP.Equal(ip) {
 			continue
 		}
 
 		return arp.SenderHardwareAddr, nil
 	}
-}
-
-// IsReply reports whether the packet p is a response to one of our
-// queries. A packet is a response if it is addressed to our IP- and
-// hardware address.
-func (c *Client) IsReply(p *Packet) bool {
-	return p.Operation == OperationReply &&
-		p.TargetIP.Equal(c.ip) &&
-		bytes.Equal(p.TargetHardwareAddr, c.ifi.HardwareAddr)
-}
-
-// IsReplyFor reports whether the packet p is a response to our query
-// for ip. It works like IsReply, but additionally checks if the
-// response is for a specific IPv4 address ip.
-func (c *Client) IsReplyFor(ip net.IP, p *Packet) bool {
-	return c.IsReply(p) && ip.Equal(p.SenderIP)
 }
 
 // Read reads a single ARP packet and returns it, together with its
