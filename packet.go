@@ -69,12 +69,6 @@ type Packet struct {
 
 	// TargetIP specifies the IPv4 address of the target of this Packet.
 	TargetIP net.IP
-
-	// RemoteAddr specifies the actual remote address from which the
-	// ARP packet was received. It is extracted from the ethernet
-	// frame and is not actually part of the ARP packet. It will not
-	// appear in the binary form of a Packet.
-	RemoteAddr net.HardwareAddr
 }
 
 // NewPacket creates a new Packet from an input Operation and hardware/IPv4

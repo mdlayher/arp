@@ -113,7 +113,7 @@ func (c *Client) Resolve(ip net.IP) (net.HardwareAddr, error) {
 func (c *Client) Read() (*Packet, *ethernet.Frame, error) {
 	buf := make([]byte, 128)
 	for {
-		n, addr, err := c.p.ReadFrom(buf)
+		n, _, err := c.p.ReadFrom(buf)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -124,9 +124,6 @@ func (c *Client) Read() (*Packet, *ethernet.Frame, error) {
 				continue
 			}
 			return nil, nil, err
-		}
-		if addr, ok := addr.(*raw.Addr); ok {
-			p.RemoteAddr = addr.HardwareAddr
 		}
 		return p, eth, nil
 	}
@@ -169,7 +166,7 @@ func (c *Client) Reply(req *Packet, hwAddr net.HardwareAddr, ip net.IP) error {
 	if err != nil {
 		return err
 	}
-	return c.WriteTo(p, req.RemoteAddr)
+	return c.WriteTo(p, req.SenderHardwareAddr)
 }
 
 // Copyright (c) 2012 The Go Authors. All rights reserved.

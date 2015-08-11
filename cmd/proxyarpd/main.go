@@ -40,7 +40,7 @@ func main() {
 	// Handle ARP requests bound for designated IPv4 address, using proxy ARP
 	// to indicate that the address belongs to this machine
 	for {
-		pkt, _, err := client.Read()
+		pkt, eth, err := client.Read()
 		if err != nil {
 			if err == io.EOF {
 				log.Println("EOF")
@@ -56,14 +56,14 @@ func main() {
 
 		// Ignore ARP requests which are not broadcast or bound directly for
 		// this machine
-		if !bytes.Equal(pkt.TargetHardwareAddr, ethernet.Broadcast) && !bytes.Equal(pkt.TargetHardwareAddr, ifi.HardwareAddr) {
+		if !bytes.Equal(eth.Destination, ethernet.Broadcast) && !bytes.Equal(eth.Destination, ifi.HardwareAddr) {
 			continue
 		}
 
 		log.Printf("request: who-has %s?  tell %s (%s)", pkt.TargetIP, pkt.SenderIP, pkt.SenderHardwareAddr)
 
 		// Ignore ARP requests which do not indicate the target IP
-		if !bytes.Equal(pkt.TargetIP, ip) {
+		if !pkt.TargetIP.Equal(ip) {
 			continue
 		}
 
