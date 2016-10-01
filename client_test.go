@@ -81,7 +81,7 @@ func Test_newClient(t *testing.T) {
 	}{
 		{
 			desc: "no network addresses",
-			err:  errNoIPv4Addr,
+			c:    &Client{},
 		},
 		{
 			desc: "OK",
@@ -94,7 +94,6 @@ func Test_newClient(t *testing.T) {
 			c: &Client{
 				ip: net.IPv4(192, 168, 1, 1).To4(),
 			},
-			err: errNoIPv4Addr,
 		},
 	}
 
@@ -125,7 +124,6 @@ func Test_firstIPv4Addr(t *testing.T) {
 	}{
 		{
 			desc: "no network addresses",
-			err:  errNoIPv4Addr,
 		},
 		{
 			desc: "non-IP network",
@@ -135,7 +133,6 @@ func Test_firstIPv4Addr(t *testing.T) {
 					Net:  "unix",
 				},
 			},
-			err: errNoIPv4Addr,
 		},
 		{
 			desc: "bad CIDR address",
@@ -162,7 +159,6 @@ func Test_firstIPv4Addr(t *testing.T) {
 					},
 				},
 			},
-			err: errNoIPv4Addr,
 		},
 		{
 			desc: "IPv4 address only",
