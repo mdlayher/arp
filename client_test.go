@@ -72,6 +72,18 @@ func TestClientSetWriteDeadline(t *testing.T) {
 	}
 }
 
+func TestClientHardwareAddr(t *testing.T) {
+	c := &Client{
+		ifi: &net.Interface{
+			HardwareAddr: net.HardwareAddr{0, 1, 2, 3, 4, 5},
+		},
+	}
+
+	if want, got := c.ifi.HardwareAddr.String(), c.HardwareAddr().String(); want != got {
+		t.Fatalf("unexpected hardware address: %v != %v", want, got)
+	}
+}
+
 func Test_newClient(t *testing.T) {
 	var tests = []struct {
 		desc  string
@@ -276,3 +288,4 @@ func (noopPacketConn) LocalAddr() net.Addr                { return nil }
 func (noopPacketConn) SetDeadline(t time.Time) error      { return nil }
 func (noopPacketConn) SetReadDeadline(t time.Time) error  { return nil }
 func (noopPacketConn) SetWriteDeadline(t time.Time) error { return nil }
+func (noopPacketConn) HardwareAddr() net.HardwareAddr     { return nil }
