@@ -205,6 +205,12 @@ func (c *Client) SetWriteDeadline(t time.Time) error {
 	return c.p.SetWriteDeadline(t)
 }
 
+// HardwareAddr fetches the hardware address for the interface associated
+// with the connection.
+func (c Client) HardwareAddr() net.HardwareAddr {
+	return c.ifi.HardwareAddr
+}
+
 // firstIPv4Addr attempts to retrieve the first detected IPv4 address from an
 // input slice of network addresses.
 func firstIPv4Addr(addrs []net.Addr) (net.IP, error) {
