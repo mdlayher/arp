@@ -23,25 +23,25 @@ type Client struct {
 	p   net.PacketConn
 }
 
-// NewClient creates a new Client using the specified network interface.
-// NewClient retrieves the IPv4 address of the interface and binds a raw socket
+// Dial creates a new Client using the specified network interface.
+// Dial retrieves the IPv4 address of the interface and binds a raw socket
 // to send and receive ARP packets.
-func NewClient(ifi *net.Interface) (*Client, error) {
+func Dial(ifi *net.Interface) (*Client, error) {
 	// Open raw socket to send and receive ARP packets using ethernet frames
 	// we build ourselves
 	p, err := raw.ListenPacket(ifi, raw.ProtocolARP)
 	if err != nil {
 		return nil, err
 	}
-	return NewClientPacketConn(ifi, p)
+	return New(ifi, p)
 }
 
-// NewClientPacketConn creates a new Client using the specified network interface
+// New creates a new Client using the specified network interface
 // and net.PacketConn. This allows the caller to define exactly how they bind to the
 // net.PacketConn. This is most useful to define what protocol to pass to socket(7).
 //
-// In most cases, callers would be better off calling NewClient.
-func NewClientPacketConn(ifi *net.Interface, p net.PacketConn) (*Client, error) {
+// In most cases, callers would be better off calling Dial.
+func New(ifi *net.Interface, p net.PacketConn) (*Client, error) {
 	// Check for usable IPv4 addresses for the Client
 	addrs, err := ifi.Addrs()
 	if err != nil {

@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("invalid IPv4 address: %q", *ipFlag)
 	}
 
-	client, err := arp.NewClient(ifi)
+	client, err := arp.Dial(ifi)
 	if err != nil {
 		log.Fatalf("couldn't create ARP client: %s", err)
 	}

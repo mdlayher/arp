@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// Set up ARP client with socket
-	c, err := arp.NewClient(ifi)
+	c, err := arp.Dial(ifi)
 	if err != nil {
 		log.Fatal(err)
 	}
