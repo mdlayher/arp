@@ -15,6 +15,10 @@ var (
 	errNoIPv4Addr = errors.New("no IPv4 address available for interface")
 )
 
+// protocolARP is the uint16 EtherType representation of ARP (Address
+// Resolution Protocol, RFC 826).
+const protocolARP = 0x0806
+
 // A Client is an ARP client, which can be used to send and receive
 // ARP packets.
 type Client struct {
@@ -29,7 +33,7 @@ type Client struct {
 func Dial(ifi *net.Interface) (*Client, error) {
 	// Open raw socket to send and receive ARP packets using ethernet frames
 	// we build ourselves
-	p, err := raw.ListenPacket(ifi, raw.ProtocolARP)
+	p, err := raw.ListenPacket(ifi, protocolARP)
 	if err != nil {
 		return nil, err
 	}
