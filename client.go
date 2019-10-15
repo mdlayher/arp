@@ -155,7 +155,7 @@ func (c *Client) WriteTo(p *Packet, addr net.HardwareAddr) error {
 	}
 
 	f := &ethernet.Frame{
-		Destination: p.TargetHardwareAddr,
+		Destination: addr,
 		Source:      p.SenderHardwareAddr,
 		EtherType:   ethernet.EtherTypeARP,
 		Payload:     pb,
