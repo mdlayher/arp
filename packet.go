@@ -1,6 +1,7 @@
 package arp
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -87,7 +88,7 @@ func NewPacket(op Operation, srcHW net.HardwareAddr, srcIP net.IP, dstHW net.Har
 	if len(dstHW) < 6 {
 		return nil, ErrInvalidHardwareAddr
 	}
-	if len(srcHW) != len(dstHW) {
+	if !bytes.Equal(ethernet.Broadcast, dstHW) && len(srcHW) != len(dstHW) {
 		return nil, ErrInvalidHardwareAddr
 	}
 

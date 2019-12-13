@@ -13,6 +13,8 @@ import (
 func TestNewPacket(t *testing.T) {
 	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
 
+	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
+
 	var tests = []struct {
 		desc  string
 		op    Operation
@@ -84,6 +86,25 @@ func TestNewPacket(t *testing.T) {
 			srcIP: net.IPv4zero,
 			dstIP: net.IPv6zero,
 			err:   ErrInvalidIP,
+		},
+		{
+			desc:  "Gratuitous ARP request, IPoIB hardware addresses",
+			op:    OperationRequest,
+			srcHW: iboip1,
+			dstHW: ethernet.Broadcast,
+			srcIP: net.IPv4zero,
+			dstIP: net.IPv4zero,
+			p: &Packet{
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 20,
+				IPLength:           4,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: iboip1,
+				SenderIP:           net.IPv4zero.To4(),
+				TargetHardwareAddr: ethernet.Broadcast,
+				TargetIP:           net.IPv4zero.To4(),
+			},
 		},
 		{
 			desc:  "OK",
