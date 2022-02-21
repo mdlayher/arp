@@ -9,11 +9,9 @@ import (
 	"github.com/mdlayher/packet"
 )
 
-var (
-	// errNoIPv4Addr is returned when an interface does not have an IPv4
-	// address.
-	errNoIPv4Addr = errors.New("no IPv4 address available for interface")
-)
+// errNoIPv4Addr is returned when an interface does not have an IPv4
+// address.
+var errNoIPv4Addr = errors.New("no IPv4 address available for interface")
 
 // protocolARP is the uint16 EtherType representation of ARP (Address
 // Resolution Protocol, RFC 826).

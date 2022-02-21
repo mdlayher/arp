@@ -15,7 +15,7 @@ func TestNewPacket(t *testing.T) {
 
 	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
 
-	var tests = []struct {
+	tests := []struct {
 		desc  string
 		op    Operation
 		srcHW net.HardwareAddr
@@ -153,7 +153,7 @@ func TestPacketMarshalBinary(t *testing.T) {
 	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
 	iboip2 := net.HardwareAddr(bytes.Repeat([]byte{1}, 20))
 
-	var tests = []struct {
+	tests := []struct {
 		desc string
 		p    *Packet
 		b    []byte
@@ -233,7 +233,7 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
 	iboip2 := net.HardwareAddr(bytes.Repeat([]byte{1}, 20))
 
-	var tests = []struct {
+	tests := []struct {
 		desc string
 		p    *Packet
 		b    []byte
@@ -339,7 +339,7 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 }
 
 func Test_parsePacket(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		desc string
 		buf  []byte
 		p    *Packet
