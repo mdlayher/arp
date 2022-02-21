@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/mdlayher/ethernet"
-	"github.com/mdlayher/raw"
+	"github.com/mdlayher/packet"
 )
 
 var (
@@ -33,7 +33,7 @@ type Client struct {
 func Dial(ifi *net.Interface) (*Client, error) {
 	// Open raw socket to send and receive ARP packets using ethernet frames
 	// we build ourselves.
-	p, err := raw.ListenPacket(ifi, protocolARP, nil)
+	p, err := packet.Listen(ifi, packet.Raw, protocolARP, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (c *Client) WriteTo(p *Packet, addr net.HardwareAddr) error {
 		return err
 	}
 
-	_, err = c.p.WriteTo(fb, &raw.Addr{HardwareAddr: addr})
+	_, err = c.p.WriteTo(fb, &packet.Addr{HardwareAddr: addr})
 	return err
 }
 
