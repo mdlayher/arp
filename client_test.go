@@ -84,7 +84,7 @@ func TestClientHardwareAddr(t *testing.T) {
 }
 
 func Test_newClient(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		desc  string
 		addrs []net.Addr
 		c     *Client
@@ -127,7 +127,7 @@ func Test_newClient(t *testing.T) {
 }
 
 func Test_firstIPv4Addr(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		desc  string
 		addrs []net.Addr
 		ip    net.IP
@@ -261,10 +261,12 @@ func (p *deadlineCapturePacketConn) SetDeadline(t time.Time) error {
 	p.w = t
 	return nil
 }
+
 func (p *deadlineCapturePacketConn) SetReadDeadline(t time.Time) error {
 	p.r = t
 	return nil
 }
+
 func (p *deadlineCapturePacketConn) SetWriteDeadline(t time.Time) error {
 	p.w = t
 	return nil
