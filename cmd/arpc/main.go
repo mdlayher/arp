@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/netip"
 	"time"
 
 	"github.com/mdlayher/arp"
@@ -45,7 +46,10 @@ func main() {
 	}
 
 	// Request hardware address for IP address
-	ip := net.ParseIP(*ipFlag).To4()
+	ip, err := netip.ParseAddr(*ipFlag)
+	if err != nil {
+		log.Fatal(err)
+	}
 	mac, err := c.Resolve(ip)
 	if err != nil {
 		log.Fatal(err)
