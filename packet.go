@@ -96,7 +96,7 @@ func NewPacket(op Operation, srcHW net.HardwareAddr, srcIP netip.Addr, dstHW net
 	// Validate IP addresses to ensure they are IPv4 addresses, and
 	// correct length
 	var invalidIP netip.Addr
-	if !srcIP.Is4() || srcIP == invalidIP {
+	if !srcIP.IsValid() || !srcIP.Is4() {
 		return nil, ErrInvalidIP
 	}
 	if !dstIP.Is4() || dstIP == invalidIP {

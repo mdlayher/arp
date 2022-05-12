@@ -43,20 +43,6 @@ func TestNewPacket(t *testing.T) {
 			dstHW: net.HardwareAddr{0, 0, 0, 0, 0, 0, 0, 0},
 			err:   ErrInvalidHardwareAddr,
 		},
-		// {
-		// 	desc:  "short source IPv4 address",
-		// 	srcHW: zeroHW,
-		// 	dstHW: zeroHW,
-		// 	srcIP: net.IP{0, 0, 0},
-		// 	err:   ErrInvalidIP,
-		// },
-		// {
-		// 	desc:  "long source IPv4 address",
-		// 	srcHW: zeroHW,
-		// 	dstHW: zeroHW,
-		// 	srcIP: net.IP{0, 0, 0, 0, 0},
-		// 	err:   ErrInvalidIP,
-		// },
 		{
 			desc:  "IPv6 source IP address",
 			srcHW: zeroHW,
@@ -64,22 +50,6 @@ func TestNewPacket(t *testing.T) {
 			srcIP: netip.IPv6Unspecified(),
 			err:   ErrInvalidIP,
 		},
-		// {
-		// 	desc:  "short destination IPv4 address",
-		// 	srcHW: zeroHW,
-		// 	dstHW: zeroHW,
-		// 	srcIP: net.IPv4zero,
-		// 	dstIP: net.IP{0, 0, 0},
-		// 	err:   ErrInvalidIP,
-		// },
-		// {
-		// 	desc:  "long destination IPv4 address",
-		// 	srcHW: zeroHW,
-		// 	dstHW: zeroHW,
-		// 	srcIP: net.IPv4zero,
-		// 	dstIP: net.IP{0, 0, 0, 0, 0},
-		// 	err:   ErrInvalidIP,
-		// },
 		{
 			desc:  "IPv6 destination IP address",
 			srcHW: zeroHW,

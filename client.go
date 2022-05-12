@@ -93,8 +93,7 @@ func (c *Client) Close() error {
 // hardware address, Request allows sending many requests in a row,
 // retrieving the responses afterwards.
 func (c *Client) Request(ip netip.Addr) error {
-	var invalidIP netip.Addr
-	if c.ip == invalidIP {
+	if !c.ip.IsValid() {
 		return errNoIPv4Addr
 	}
 
@@ -240,5 +239,5 @@ func firstIPv4Addr(addrs []netip.Addr) (netip.Addr, error) {
 			return a, nil
 		}
 	}
-	return netip.Addr{}, nil
+	return netip.Addr{}, errNoIPv4Addr
 }
