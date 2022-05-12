@@ -5,13 +5,23 @@ import (
 	"errors"
 	"io"
 	"net"
+	"net/netip"
 	"testing"
 )
+
+func ipv6loopback() netip.Addr {
+	l := net.IPv6loopback
+	a, ok := netip.AddrFromSlice(l)
+	if !ok {
+		panic("invalid loopback address")
+	}
+	return a
+}
 
 func TestClientRequestNoIPv4Address(t *testing.T) {
 	c := &Client{}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.Addr{})
 	if want := errNoIPv4Addr; want != got {
 		t.Fatalf("unexpected error for no IPv4 address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -21,10 +31,10 @@ func TestClientRequestNoIPv4Address(t *testing.T) {
 func TestClientRequestInvalidSourceHardwareAddr(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{},
-		ip:  net.IPv4zero,
+		ip:  netip.IPv4Unspecified(),
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := ErrInvalidHardwareAddr; want != got {
 		t.Fatalf("unexpected error for invalid source hardware address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -36,10 +46,10 @@ func TestClientRequestIPv6Address(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 	}
 
-	_, got := c.Resolve(net.IPv6loopback)
+	_, got := c.Resolve(ipv6loopback())
 	if want := ErrInvalidIP; want != got {
 		t.Fatalf("unexpected error for IPv6 address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -53,13 +63,13 @@ func TestClientRequestErrWriteTo(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &errWriteToPacketConn{
 			err: errWriteTo,
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := errWriteTo; want != got {
 		t.Fatalf("unexpected error during WriteTo:\n- want: %v\n-  got: %v",
 			want, got)
@@ -73,13 +83,13 @@ func TestClientRequestErrReadFrom(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &errReadFromPacketConn{
 			err: errReadFrom,
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := errReadFrom; want != got {
 		t.Fatalf("unexpected error during ReadFrom:\n- want: %v\n-  got: %v",
 			want, got)
@@ -91,13 +101,13 @@ func TestClientRequestEthernetFrameUnexpectedEOF(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer([]byte{0}),
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame:\n- want: %v\n-  got: %v",
 			want, got)
@@ -109,7 +119,7 @@ func TestClientRequestEthernetFrameWrongDestinationHardwareAddr(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame with wrong destination hardware address
@@ -120,7 +130,7 @@ func TestClientRequestEthernetFrameWrongDestinationHardwareAddr(t *testing.T) {
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong destination hardware address:\n- want: %v\n-  got: %v",
 			want, got)
@@ -132,7 +142,7 @@ func TestClientRequestEthernetFrameWrongEtherType(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame with non-ARP EtherType
@@ -143,7 +153,7 @@ func TestClientRequestEthernetFrameWrongEtherType(t *testing.T) {
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong EtherType:\n- want: %v\n-  got: %v",
 			want, got)
@@ -155,7 +165,7 @@ func TestClientRequestARPPacketUnexpectedEOF(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame
@@ -170,7 +180,7 @@ func TestClientRequestARPPacketUnexpectedEOF(t *testing.T) {
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error while reading ARP packet:\n- want: %v\n-  got: %v",
 			want, got)
@@ -182,7 +192,7 @@ func TestClientRequestARPRequestInsteadOfResponse(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4zero,
+		ip: netip.IPv4Unspecified(),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame
@@ -203,7 +213,7 @@ func TestClientRequestARPRequestInsteadOfResponse(t *testing.T) {
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong operation type:\n- want: %v\n-  got: %v",
 			want, got)
@@ -215,7 +225,7 @@ func TestClientRequestARPResponseWrongSenderIP(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-		ip: net.IPv4(192, 168, 1, 1).To4(),
+		ip: netip.AddrFrom4([4]byte{192, 168, 1, 1}),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame
@@ -236,7 +246,7 @@ func TestClientRequestARPResponseWrongSenderIP(t *testing.T) {
 		},
 	}
 
-	_, got := c.Resolve(net.IPv4zero)
+	_, got := c.Resolve(netip.IPv4Unspecified())
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong sender IP:\n- want: %v\n-  got: %v",
 			want, got)
@@ -248,7 +258,7 @@ func TestClientRequestOK(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
 		},
-		ip: net.IPv4(192, 168, 1, 1).To4(),
+		ip: netip.AddrFrom4([4]byte{192, 168, 1, 1}),
 		p: &bufferReadFromPacketConn{
 			b: bytes.NewBuffer(append([]byte{
 				// Ethernet frame
@@ -270,7 +280,7 @@ func TestClientRequestOK(t *testing.T) {
 	}
 
 	wantHW := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
-	gotHW, err := c.Resolve(net.IPv4(192, 168, 1, 10))
+	gotHW, err := c.Resolve(netip.AddrFrom4([4]byte{192, 168, 1, 10}))
 	if err != nil {
 		t.Fatal(err)
 	}

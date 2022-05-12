@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/netip"
 
 	"github.com/mdlayher/arp"
 	"github.com/mdlayher/ethernet"
@@ -27,8 +28,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ip := net.ParseIP(*ipFlag).To4()
-	if ip == nil {
+	ip, err := netip.ParseAddr(*ipFlag)
+	if err != nil || !ip.Is4() {
 		log.Fatalf("invalid IPv4 address: %q", *ipFlag)
 	}
 
@@ -63,7 +64,7 @@ func main() {
 		log.Printf("request: who-has %s?  tell %s (%s)", pkt.TargetIP, pkt.SenderIP, pkt.SenderHardwareAddr)
 
 		// Ignore ARP requests which do not indicate the target IP
-		if !pkt.TargetIP.Equal(ip) {
+		if pkt.TargetIP != ip {
 			continue
 		}
 

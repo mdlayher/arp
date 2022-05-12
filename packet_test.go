@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net"
+	"net/netip"
 	"reflect"
 	"testing"
 
@@ -19,9 +20,9 @@ func TestNewPacket(t *testing.T) {
 		desc  string
 		op    Operation
 		srcHW net.HardwareAddr
-		srcIP net.IP
+		srcIP netip.Addr
 		dstHW net.HardwareAddr
-		dstIP net.IP
+		dstIP netip.Addr
 		p     *Packet
 		err   error
 	}{
@@ -43,48 +44,18 @@ func TestNewPacket(t *testing.T) {
 			err:   ErrInvalidHardwareAddr,
 		},
 		{
-			desc:  "short source IPv4 address",
-			srcHW: zeroHW,
-			dstHW: zeroHW,
-			srcIP: net.IP{0, 0, 0},
-			err:   ErrInvalidIP,
-		},
-		{
-			desc:  "long source IPv4 address",
-			srcHW: zeroHW,
-			dstHW: zeroHW,
-			srcIP: net.IP{0, 0, 0, 0, 0},
-			err:   ErrInvalidIP,
-		},
-		{
 			desc:  "IPv6 source IP address",
 			srcHW: zeroHW,
 			dstHW: zeroHW,
-			srcIP: net.IPv6zero,
-			err:   ErrInvalidIP,
-		},
-		{
-			desc:  "short destination IPv4 address",
-			srcHW: zeroHW,
-			dstHW: zeroHW,
-			srcIP: net.IPv4zero,
-			dstIP: net.IP{0, 0, 0},
-			err:   ErrInvalidIP,
-		},
-		{
-			desc:  "long destination IPv4 address",
-			srcHW: zeroHW,
-			dstHW: zeroHW,
-			srcIP: net.IPv4zero,
-			dstIP: net.IP{0, 0, 0, 0, 0},
+			srcIP: netip.IPv6Unspecified(),
 			err:   ErrInvalidIP,
 		},
 		{
 			desc:  "IPv6 destination IP address",
 			srcHW: zeroHW,
 			dstHW: zeroHW,
-			srcIP: net.IPv4zero,
-			dstIP: net.IPv6zero,
+			srcIP: netip.IPv4Unspecified(),
+			dstIP: netip.IPv6Unspecified(),
 			err:   ErrInvalidIP,
 		},
 		{
@@ -92,8 +63,8 @@ func TestNewPacket(t *testing.T) {
 			op:    OperationRequest,
 			srcHW: iboip1,
 			dstHW: ethernet.Broadcast,
-			srcIP: net.IPv4zero,
-			dstIP: net.IPv4zero,
+			srcIP: netip.IPv4Unspecified(),
+			dstIP: netip.IPv4Unspecified(),
 			p: &Packet{
 				HardwareType:       1,
 				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
@@ -101,9 +72,9 @@ func TestNewPacket(t *testing.T) {
 				IPLength:           4,
 				Operation:          OperationRequest,
 				SenderHardwareAddr: iboip1,
-				SenderIP:           net.IPv4zero.To4(),
+				SenderIP:           netip.IPv4Unspecified(),
 				TargetHardwareAddr: ethernet.Broadcast,
-				TargetIP:           net.IPv4zero.To4(),
+				TargetIP:           netip.IPv4Unspecified(),
 			},
 		},
 		{
@@ -111,8 +82,8 @@ func TestNewPacket(t *testing.T) {
 			op:    OperationRequest,
 			srcHW: zeroHW,
 			dstHW: zeroHW,
-			srcIP: net.IPv4zero,
-			dstIP: net.IPv4zero,
+			srcIP: netip.IPv4Unspecified(),
+			dstIP: netip.IPv4Unspecified(),
 			p: &Packet{
 				HardwareType:       1,
 				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
@@ -120,9 +91,9 @@ func TestNewPacket(t *testing.T) {
 				IPLength:           4,
 				Operation:          OperationRequest,
 				SenderHardwareAddr: zeroHW,
-				SenderIP:           net.IPv4zero.To4(),
+				SenderIP:           netip.IPv4Unspecified(),
 				TargetHardwareAddr: zeroHW,
-				TargetIP:           net.IPv4zero.To4(),
+				TargetIP:           netip.IPv4Unspecified(),
 			},
 		},
 	}
@@ -147,8 +118,8 @@ func TestNewPacket(t *testing.T) {
 
 func TestPacketMarshalBinary(t *testing.T) {
 	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
-	ip1 := net.IP{192, 168, 1, 10}
-	ip2 := net.IP{192, 168, 1, 1}
+	ip1 := netip.MustParseAddr("192.168.1.10")
+	ip2 := netip.MustParseAddr("192.168.1.1")
 
 	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
 	iboip2 := net.HardwareAddr(bytes.Repeat([]byte{1}, 20))
@@ -227,8 +198,8 @@ func TestPacketMarshalBinary(t *testing.T) {
 
 func TestPacketUnmarshalBinary(t *testing.T) {
 	zeroHW := net.HardwareAddr{0, 0, 0, 0, 0, 0}
-	ip1 := net.IP{192, 168, 1, 10}
-	ip2 := net.IP{192, 168, 1, 1}
+	ip1 := netip.MustParseAddr("192.168.1.10")
+	ip2 := netip.MustParseAddr("192.168.1.1")
 
 	iboip1 := net.HardwareAddr(bytes.Repeat([]byte{0}, 20))
 	iboip2 := net.HardwareAddr(bytes.Repeat([]byte{1}, 20))
@@ -395,9 +366,9 @@ func Test_parsePacket(t *testing.T) {
 				IPLength:           4,
 				Operation:          OperationReply,
 				SenderHardwareAddr: net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-				SenderIP:           net.IP{192, 168, 1, 10},
+				SenderIP:           netip.MustParseAddr("192.168.1.10"),
 				TargetHardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-				TargetIP:           net.IP{192, 168, 1, 1},
+				TargetIP:           netip.MustParseAddr("192.168.1.1"),
 			},
 		},
 	}
@@ -426,9 +397,9 @@ func BenchmarkPacketMarshalBinary(b *testing.B) {
 	p, err := NewPacket(
 		OperationRequest,
 		net.HardwareAddr{0xad, 0xbe, 0xef, 0xde, 0xad, 0xde},
-		net.IP{192, 168, 1, 10},
+		netip.MustParseAddr("192.168.1.10"),
 		net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-		net.IP{192, 168, 1, 1},
+		netip.MustParseAddr("192.168.1.1"),
 	)
 	if err != nil {
 		b.Fatal(err)
@@ -453,9 +424,9 @@ func BenchmarkPacketUnmarshalBinary(b *testing.B) {
 	p, err := NewPacket(
 		OperationRequest,
 		net.HardwareAddr{0xad, 0xbe, 0xef, 0xde, 0xad, 0xde},
-		net.IP{192, 168, 1, 10},
+		netip.MustParseAddr("192.168.1.10"),
 		net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-		net.IP{192, 168, 1, 1},
+		netip.MustParseAddr("192.168.1.1"),
 	)
 	if err != nil {
 		b.Fatal(err)
