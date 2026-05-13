@@ -221,6 +221,31 @@ func TestPacketMarshalBinary(t *testing.T) {
 				192, 168, 1, 2,
 			},
 		},
+		{
+			desc: "ARP request with IPv6 addresses",
+			p: &Packet{
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 6,
+				IPLength:           16,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
+				SenderIP:           netip.MustParseAddr("::1"),
+				TargetHardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
+				TargetIP:           netip.MustParseAddr("::2"),
+			},
+			b: []byte{
+				0, 1,
+				8, 0,
+				6,
+				16,
+				0, 1,
+				0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, // ::1
+				0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, // ::2
+			},
+		},
 	}
 
 	for i, tt := range tests {

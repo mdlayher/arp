@@ -161,15 +161,15 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 	copy(b[n:n+hal], p.SenderHardwareAddr)
 	n += hal
 
-	sender4 := p.SenderIP.As4()
-	copy(b[n:n+pl], sender4[:])
+	senderIP := p.SenderIP.As16()
+	copy(b[n:n+pl], senderIP[16-pl:])
 	n += pl
 
 	copy(b[n:n+hal], p.TargetHardwareAddr)
 	n += hal
 
-	target4 := p.TargetIP.As4()
-	copy(b[n:n+pl], target4[:])
+	targetIP := p.TargetIP.As16()
+	copy(b[n:n+pl], targetIP[16-pl:])
 
 	return b, nil
 }
