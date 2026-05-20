@@ -72,15 +72,23 @@ func TestClientSetWriteDeadline(t *testing.T) {
 	}
 }
 
-func TestClientHardwareAddr(t *testing.T) {
+func TestClientAttrs(t *testing.T) {
+	hwaddr := net.HardwareAddr{0, 1, 2, 3, 4, 5}
+	ifname := "eth0.100"
+
 	c := &Client{
 		ifi: &net.Interface{
-			HardwareAddr: net.HardwareAddr{0, 1, 2, 3, 4, 5},
+			HardwareAddr: hwaddr,
+			Name:         ifname,
 		},
 	}
 
-	if want, got := c.ifi.HardwareAddr.String(), c.HardwareAddr().String(); want != got {
-		t.Fatalf("unexpected hardware address: %v != %v", want, got)
+	if want, got := hwaddr.String(), c.HardwareAddr().String(); want != got {
+		t.Errorf("unexpected hardware address: %v != %v", want, got)
+	}
+
+	if want, got := ifname, c.InterfaceName(); want != got {
+		t.Errorf("unexpected interface name: %v != %v", want, got)
 	}
 }
 
