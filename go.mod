@@ -1,6 +1,6 @@
 module github.com/mdlayher/arp
 
-go 1.12
+go 1.18
 
 require (
 	github.com/mdlayher/ethernet v0.0.0-20220221185849-529eae5b6118
