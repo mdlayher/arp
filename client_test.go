@@ -31,10 +31,10 @@ func TestClientSetDeadline(t *testing.T) {
 	}
 
 	if want, got := d, p.r; want != got {
-		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+		t.Errorf("unexpected read deadline: %v != %v", want, got)
 	}
 	if want, got := d, p.w; want != got {
-		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+		t.Errorf("unexpected write deadline: %v != %v", want, got)
 	}
 }
 
@@ -48,10 +48,10 @@ func TestClientSetReadDeadline(t *testing.T) {
 	}
 
 	if want, got := d, p.r; want != got {
-		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+		t.Errorf("unexpected read deadline: %v != %v", want, got)
 	}
 	if want, got := (time.Time{}), p.w; want != got {
-		t.Fatalf("non-zero write deadline: %v", got)
+		t.Errorf("non-zero write deadline: %v", got)
 	}
 }
 
@@ -65,10 +65,10 @@ func TestClientSetWriteDeadline(t *testing.T) {
 	}
 
 	if want, got := (time.Time{}), p.r; want != got {
-		t.Fatalf("non-zero read deadline: %v", got)
+		t.Errorf("non-zero read deadline: %v", got)
 	}
 	if want, got := d, p.w; want != got {
-		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+		t.Errorf("unexpected write deadline: %v != %v", want, got)
 	}
 }
 
