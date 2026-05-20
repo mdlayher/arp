@@ -181,6 +181,71 @@ func TestPacketMarshalBinary(t *testing.T) {
 				192, 168, 1, 1,
 			},
 		},
+		{
+			// Regression test for overflowing uint8 arithmetic
+			desc: "ARP request with 16 byte hardware address",
+			p: &Packet{
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 128,
+				IPLength:           4,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: make([]byte, 128),
+				SenderIP:           netip.MustParseAddr("192.168.1.1"),
+				TargetHardwareAddr: make([]byte, 128),
+				TargetIP:           netip.MustParseAddr("192.168.1.2"),
+			},
+			b: []byte{
+				0, 1,
+				8, 0,
+				128,
+				4,
+				0, 1,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				192, 168, 1, 1,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				192, 168, 1, 2,
+			},
+		},
+		{
+			desc: "ARP request with IPv6 addresses",
+			p: &Packet{
+				HardwareType:       1,
+				ProtocolType:       uint16(ethernet.EtherTypeIPv4),
+				HardwareAddrLength: 6,
+				IPLength:           16,
+				Operation:          OperationRequest,
+				SenderHardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
+				SenderIP:           netip.MustParseAddr("::1"),
+				TargetHardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
+				TargetIP:           netip.MustParseAddr("::2"),
+			},
+			b: []byte{
+				0, 1,
+				8, 0,
+				6,
+				16,
+				0, 1,
+				0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, // ::1
+				0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, // ::2
+			},
+		},
 	}
 
 	for i, tt := range tests {
@@ -236,6 +301,21 @@ func TestPacketUnmarshalBinary(t *testing.T) {
 				0, 1,
 			},
 			err: io.ErrUnexpectedEOF,
+		},
+		{
+			desc: "invalid IP address length",
+			b: []byte{
+				0, 1,
+				8, 0,
+				6,
+				3, // IPLength=3
+				0, 1,
+				0, 0, 0, 0, 0, 0,
+				1, 2, 3, // sender IP (3 bytes)
+				0, 0, 0, 0, 0, 0,
+				3, 2, 1, // target IP (3 bytes)
+			},
+			err: ErrInvalidIP,
 		},
 		{
 			desc: "ARP request to ethernet broadcast, 6 byte hardware addresses",
