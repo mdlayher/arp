@@ -69,7 +69,7 @@ func New(ifi *net.Interface, p net.PacketConn) (*Client, error) {
 func newClient(ifi *net.Interface, p net.PacketConn, addrs []netip.Addr) (*Client, error) {
 	ip, err := firstIPv4Addr(addrs)
 	if err != nil {
-		return nil, err
+		ip, _ = netip.ParseAddr("0.0.0.0")
 	}
 
 	return &Client{
